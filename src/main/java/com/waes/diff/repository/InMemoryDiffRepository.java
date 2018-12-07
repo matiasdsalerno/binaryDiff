@@ -42,4 +42,8 @@ public class InMemoryDiffRepository implements DiffRepository {
     public Optional<Diff> getDiff(long l) {
         return Optional.ofNullable(diffs.get(l));
     }
+
+    public void clear() {
+        diffs.clear();
+    }
 }
