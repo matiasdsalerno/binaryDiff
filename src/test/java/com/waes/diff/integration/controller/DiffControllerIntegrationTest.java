@@ -1,6 +1,7 @@
 package com.waes.diff.integration.controller;
 
 import com.waes.diff.controller.DiffController;
+import com.waes.diff.controller.exceptions.DataNotEncodedException;
 import com.waes.diff.model.Diff;
 import com.waes.diff.model.DiffData;
 import com.waes.diff.model.DiffInsight;
@@ -32,10 +33,7 @@ import static org.mockito.BDDMockito.given;
 public class DiffControllerIntegrationTest {
 
     static private final String ENCODED_DATA = Base64.getEncoder().encodeToString("encoded Data".getBytes());
-    static private final String ENCODED_DATA_DIFF_AT_END = Base64.getEncoder().encodeToString("encoded DatA".getBytes());
     static private final String ENCODED_DATA_3OFFSET = Base64.getEncoder().encodeToString("encodedDATAA".getBytes());
-    static private final String ENCODED_DATA_DIFF_AT_BEGINNING = Base64.getEncoder().encodeToString("Encoded Data".getBytes());
-    static private final String ENCODED_DATA_DIFF_IN_MIDDLE = Base64.getEncoder().encodeToString("encoded data".getBytes());
     static private final String ENCODED_DATA_2 = Base64.getEncoder().encodeToString("encoded Data 2".getBytes());
     static private final String ENCODED_DATA_LONG_DATA_SET = Base64.getEncoder().encodeToString("encoded Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2".getBytes());
     static private final String ENCODED_DATA_LONG_DATA_SET_MANY_DIFFS = Base64.getEncoder().encodeToString("encoded Data 2Data 2Data 2Data 2Data 4Data 2Data 2Data 2Data 3Data 3Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2Data 2".getBytes());
@@ -48,7 +46,7 @@ public class DiffControllerIntegrationTest {
     private InMemoryDiffRepository inMemoryDiffRepository;
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         inMemoryDiffRepository.clear();
     }
 
@@ -73,6 +71,18 @@ public class DiffControllerIntegrationTest {
     public void testWhenDiffIncompleteFromLeft_GetDiffResult_ThrowsException() {
         diffController.setRightDiff(1L, new DiffData(ENCODED_DATA));
         diffController.getDiffResult(1L);
+    }
+
+
+    @Test(expected = DataNotEncodedException.class)
+    public void testDiffDataNotEncodedFromRight_GetDiffResult_ThrowsException() {
+        diffController.setRightDiff(1L, new DiffData("Hello!"));
+    }
+
+
+    @Test(expected = DataNotEncodedException.class)
+    public void testDiffDataNotEncodedFromLeft_GetDiffResult_ThrowsException() {
+        diffController.setLeftDiff(1L, new DiffData("Hello!"));
     }
 
     @Test(expected = IncompleteDiffException.class)
