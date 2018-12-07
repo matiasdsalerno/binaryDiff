@@ -12,21 +12,25 @@ public class DiffController {
 
     private DiffService diffService;
 
+    public DiffController(DiffService diffService) {
+        this.diffService = diffService;
+    }
+
     @PostMapping("/right")
     public void setRightDiff(@PathVariable("id") Long id,
             @RequestBody DiffData diffData) {
-
+        diffService.saveRightDiff(id, diffData);
     }
 
     @PostMapping("/left")
     public void setLeftDiff(@PathVariable("id") Long id,
                              @RequestBody DiffData diffData) {
-
+        diffService.saveLeftDiff(id, diffData);
     }
 
     @GetMapping
     public DiffResult getDiffResult(@PathVariable("id") Long id) {
-        return null;
+        return diffService.getDiffResult(id);
     }
 
 }

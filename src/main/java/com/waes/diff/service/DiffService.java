@@ -7,6 +7,7 @@ import com.waes.diff.model.DiffResult;
 import com.waes.diff.repository.DiffRepository;
 import com.waes.diff.service.exceptions.DiffNotFoundException;
 import com.waes.diff.service.exceptions.IncompleteDiffException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
+@Slf4j
 public class DiffService {
 
     private DiffRepository diffRepository;
@@ -28,15 +30,18 @@ public class DiffService {
     }
 
     public void saveRightDiff(Long id, DiffData diffData) {
+        log.info("Saving right data for diff {}", id);
         diffRepository.saveRightDiff(id, diffData);
     }
 
 
     public void saveLeftDiff(Long id, DiffData diffData) {
+        log.info("Saving left data for diff {}", id);
         diffRepository.saveLeftDiff(id, diffData);
     }
 
     public DiffResult getDiffResult(Long diffId) {
+        log.info("Getting diff result for diff {}", diffId);
         Optional<Diff> optionalDiff = diffRepository.getDiff(diffId);
 
         if(!optionalDiff.isPresent()) {
@@ -59,6 +64,7 @@ public class DiffService {
             return DiffResult.differentSize(diffId, diff.getRight().length() - diff.getLeft().length());
         }
 
+        log.info("Diff {} has same size but different data", diffId);
         char[] leftData = diff.getLeft().toCharArray();
         char[] rightData = diff.getRight().toCharArray();
         // To improve performance of the diff, divide diff into buckets, so that each bucket can be compared in a different Thread
@@ -66,6 +72,7 @@ public class DiffService {
         int lastBucketSize = calculateLastBucketSize(leftData);
 
         // Create completable futures that will execute in parallel all the diffs
+        log.info("Getting diff indexes for Diff {}", diffId);
         List<Integer> insights = IntStream.range(0, buckets)
                 .mapToObj(i -> CompletableFuture.supplyAsync(() -> getDiffIndexes(i, leftData, rightData, BUCKET_SIZE)))
                 .map(CompletableFuture::join)
@@ -77,6 +84,7 @@ public class DiffService {
         insights.addAll(lastBucketInsights);
 
         // Calculate diff insights (indexes + offsets)
+        log.info("Calculating insights for Diff {}", diffId);
         List<DiffInsight> diffInsights = calculateDiffInsights(insights);
 
         return DiffResult.sameSize(diffId, diffInsights);
