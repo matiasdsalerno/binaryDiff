@@ -5,12 +5,14 @@ import com.waes.diff.model.DiffData;
 import com.waes.diff.model.DiffInsight;
 import com.waes.diff.model.DiffResult;
 import com.waes.diff.repository.DiffRepository;
+import com.waes.diff.service.exceptions.DiffNotFoundException;
 import com.waes.diff.service.exceptions.IncompleteDiffException;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -35,7 +37,13 @@ public class DiffService {
     }
 
     public DiffResult getDiffResult(Long diffId) {
-        Diff diff = diffRepository.getDiff(diffId);
+        Optional<Diff> optionalDiff = diffRepository.getDiff(diffId);
+
+        if(!optionalDiff.isPresent()) {
+            throw new DiffNotFoundException(diffId);
+        }
+
+        Diff diff = optionalDiff.get();
 
         if(Objects.isNull(diff.getRight())) {
             throw new IncompleteDiffException("Right part of the diff is null");

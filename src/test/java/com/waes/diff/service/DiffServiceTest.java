@@ -4,6 +4,7 @@ import com.waes.diff.model.Diff;
 import com.waes.diff.model.DiffInsight;
 import com.waes.diff.model.DiffResult;
 import com.waes.diff.repository.DiffRepository;
+import com.waes.diff.service.exceptions.DiffNotFoundException;
 import com.waes.diff.service.exceptions.IncompleteDiffException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +15,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -37,9 +39,17 @@ public class DiffServiceTest {
     @InjectMocks
     private DiffService diffService;
 
+
+    @Test(expected = DiffNotFoundException.class)
+    public void testWhenDiffNotFound_GetDiffResult_ThrowsException() {
+        given(diffRepository.getDiff(1L)).willReturn(Optional.empty());
+
+        diffService.getDiffResult(1L);
+    }
+
     @Test(expected = IncompleteDiffException.class)
     public void testWhenDiffIsIncomplete_GetDiffResult_ThrowsException() {
-        given(diffRepository.getDiff(1L)).willReturn(new Diff(1L, ENCODED_DATA, null));
+        given(diffRepository.getDiff(1L)).willReturn(Optional.of(new Diff(1L, ENCODED_DATA, null)));
 
         diffService.getDiffResult(1L);
     }
@@ -47,7 +57,7 @@ public class DiffServiceTest {
     @Test(expected = IncompleteDiffException.class)
     public void testWhenDiffIsIncompleteRight_GetDiffResult_ThrowsException() {
 
-        given(diffRepository.getDiff(1L)).willReturn(new Diff(1L, null, ENCODED_DATA));
+        given(diffRepository.getDiff(1L)).willReturn(Optional.of(new Diff(1L, null, ENCODED_DATA)));
 
         diffService.getDiffResult(1L);
     }
@@ -55,7 +65,7 @@ public class DiffServiceTest {
     @Test
     public void testWhenDiffIsEqual_GetDiffResult_ShowsEqual() {
 
-        given(diffRepository.getDiff(1L)).willReturn(new Diff(1L, ENCODED_DATA, ENCODED_DATA));
+        given(diffRepository.getDiff(1L)).willReturn(Optional.of(new Diff(1L, ENCODED_DATA, ENCODED_DATA)));
 
         DiffResult diffResult = diffService.getDiffResult(1L);
 
@@ -65,7 +75,7 @@ public class DiffServiceTest {
     @Test
     public void testWhenDiffHasDifferentSize_GetDiffResult_ShowsDifferenceInSize() {
 
-        given(diffRepository.getDiff(1L)).willReturn(new Diff(1L, ENCODED_DATA_2, ENCODED_DATA));
+        given(diffRepository.getDiff(1L)).willReturn(Optional.of(new Diff(1L, ENCODED_DATA_2, ENCODED_DATA)));
 
         DiffResult diffResult = diffService.getDiffResult(1L);
 
@@ -77,7 +87,7 @@ public class DiffServiceTest {
 
         assertEquals(ENCODED_DATA.length(), ENCODED_DATA_DIFF_IN_MIDDLE.length());
 
-        given(diffRepository.getDiff(1L)).willReturn(new Diff(1L, ENCODED_DATA, ENCODED_DATA_DIFF_IN_MIDDLE));
+        given(diffRepository.getDiff(1L)).willReturn(Optional.of(new Diff(1L, ENCODED_DATA, ENCODED_DATA_DIFF_IN_MIDDLE)));
 
         DiffResult diffResult = diffService.getDiffResult(1L);
 
@@ -91,7 +101,7 @@ public class DiffServiceTest {
 
         assertEquals(ENCODED_DATA.length(), ENCODED_DATA_DIFF_AT_BEGINNING.length());
 
-        given(diffRepository.getDiff(1L)).willReturn(new Diff(1L, ENCODED_DATA, ENCODED_DATA_DIFF_AT_BEGINNING));
+        given(diffRepository.getDiff(1L)).willReturn(Optional.of(new Diff(1L, ENCODED_DATA, ENCODED_DATA_DIFF_AT_BEGINNING)));
 
         DiffResult diffResult = diffService.getDiffResult(1L);
 
@@ -105,7 +115,7 @@ public class DiffServiceTest {
 
         assertEquals(ENCODED_DATA.length(), ENCODED_DATA_DIFF_AT_END.length());
 
-        given(diffRepository.getDiff(1L)).willReturn(new Diff(1L, ENCODED_DATA, ENCODED_DATA_DIFF_AT_END));
+        given(diffRepository.getDiff(1L)).willReturn(Optional.of(new Diff(1L, ENCODED_DATA, ENCODED_DATA_DIFF_AT_END)));
 
         DiffResult diffResult = diffService.getDiffResult(1L);
 
@@ -119,7 +129,7 @@ public class DiffServiceTest {
 
         assertEquals(ENCODED_DATA_LONG_DATA_SET.length(), ENCODED_DATA_LONG_DATA_SET_MANY_DIFFS.length());
 
-        given(diffRepository.getDiff(1L)).willReturn(new Diff(1L, ENCODED_DATA_LONG_DATA_SET, ENCODED_DATA_LONG_DATA_SET_MANY_DIFFS));
+        given(diffRepository.getDiff(1L)).willReturn(Optional.of(new Diff(1L, ENCODED_DATA_LONG_DATA_SET, ENCODED_DATA_LONG_DATA_SET_MANY_DIFFS)));
 
         DiffResult diffResult = diffService.getDiffResult(1L);
 
@@ -136,7 +146,7 @@ public class DiffServiceTest {
 
         assertEquals(ENCODED_DATA.length(), ENCODED_DATA_3OFFSET.length());
 
-        given(diffRepository.getDiff(1L)).willReturn(new Diff(1L, ENCODED_DATA, ENCODED_DATA_3OFFSET));
+        given(diffRepository.getDiff(1L)).willReturn(Optional.of(new Diff(1L, ENCODED_DATA, ENCODED_DATA_3OFFSET)));
 
         DiffResult diffResult = diffService.getDiffResult(1L);
 
